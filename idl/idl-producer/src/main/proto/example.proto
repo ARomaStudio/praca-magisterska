@@ -1,0 +1,25 @@
+syntax = "proto3";
+package pm.s32237;
+option java_package = "pm.producer.s32237";
+option java_outer_classname = "ProtobufExample";
+
+message RequestDto {
+  int32 id = 1;
+}
+
+message ResponseDto {
+  int32 id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  repeated PhoneNumber phone = 5;
+  message PhoneNumber {
+    string number = 1;
+    PhoneType type = 2;
+  }
+  enum PhoneType {
+    MOBILE = 0;
+    LANDLINE = 1;
+  }
+
+}
