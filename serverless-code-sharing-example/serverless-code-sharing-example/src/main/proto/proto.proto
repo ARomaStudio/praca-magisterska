@@ -1,0 +1,10 @@
+syntax = "proto3";
+package pm.s32237;
+
+option java_package = "pm.s32237";
+option java_outer_classname = "ProtobufExample";
+
+message MyInputDto {
+    string type = 1;
+    string name = 2;
+}
