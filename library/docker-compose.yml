@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  library-apps:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8091:8081"  # Client port
+      - "8092:8082"  # Producer port
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    restart: unless-stopped 

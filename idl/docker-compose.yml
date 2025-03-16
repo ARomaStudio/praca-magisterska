@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  idl-apps:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "802:8082"  # Producer port
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    restart: unless-stopped 
