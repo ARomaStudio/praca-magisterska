@@ -1,50 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.1</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<version>3.3.0</version>
+		<relativePath /> <!-- Look here -->
 	</parent>
+
 	<groupId>pracamagisterska.s32237</groupId>
 	<artifactId>library-producer</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>library-producer</name>
 	<description>Praca magisterska przykład konsumenta biblioteki</description>
 	<url/>
+
 	<licenses>
 		<license/>
 	</licenses>
+
 	<developers>
 		<developer/>
 	</developers>
+
 	<scm>
 		<connection/>
 		<developerConnection/>
 		<tag/>
 		<url/>
 	</scm>
+
 	<properties>
-		<java.version>21</java.version>
+		<java.version>21</java.version> <!-- Ensure this is the correct version -->
 	</properties>
 
-	<!-- konfiguracja popłacenia z nexusem -->
+	<!-- Nexus repositories configuration -->
 	<repositories>
 		<repository>
 			<id>nexus</id>
-			<url>http://localhost:8081/repository/maven-public/</url>
+			<url>http://localhost:8081/repository/maven-central/</url>
 		</repository>
 	</repositories>
 
 	<pluginRepositories>
 		<pluginRepository>
 			<id>nexus</id>
-			<url>http://localhost:8081/repository/maven-public/</url>
+			<url>http://localhost:8081/repository/maven-central/</url>
 		</pluginRepository>
 	</pluginRepositories>
-	<!-- konfiguracja popłacenia z nexusem -->
 
 	<dependencies>
 		<dependency>
@@ -65,16 +70,19 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<!-- konfiguracja popłacenia z nexusem -->
+
+			<!-- Maven Compiler Plugin (updated to Java 21) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.10.1</version> <!-- Update to a compatible version -->
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>21</source> <!-- Update to Java 21 -->
+					<target>21</target> <!-- Update to Java 21 -->
 				</configuration>
 			</plugin>
+
+			<!-- Maven Deploy Plugin (correct repository for snapshots and releases) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
@@ -84,7 +92,7 @@
 					<altSnapshotDeploymentRepository>nexus::default::http://localhost:8081/repository/maven-snapshots/</altSnapshotDeploymentRepository>
 				</configuration>
 			</plugin>
-			<!-- konfiguracja popłacenia z nexusem -->
+
 		</plugins>
 	</build>
 

@@ -3,7 +3,6 @@ package pm.s32237.service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import pm.producer.s32237.ProtobufExample;
 
 @Service
 public class SdkClientService {
@@ -15,9 +14,9 @@ public class SdkClientService {
         this.restTemplate = restTemplate;
     }
 
-    public ProtobufExample.ResponseDto sendRequest() {
-        ResponseEntity<ProtobufExample.ResponseDto> sdkResponseDtoResponseEntity = restTemplate.postForEntity(SDK_PRODUCER_URL, ProtobufExample.RequestDto.newBuilder().setId(1).build(), ProtobufExample.ResponseDto.class);
-        return sdkResponseDtoResponseEntity.getBody();
-    }
+//    public ProtobufExample.ResponseDto sendRequest() {
+//        ResponseEntity<ProtobufExample.ResponseDto> sdkResponseDtoResponseEntity = restTemplate.postForEntity(SDK_PRODUCER_URL, ProtobufExample.RequestDto.newBuilder().setId(1).build(), ProtobufExample.ResponseDto.class);
+//        return sdkResponseDtoResponseEntity.getBody();
+//    }
 
 }

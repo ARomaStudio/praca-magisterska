@@ -8,7 +8,7 @@ import pracamagisterska.s32237.libproducer.SharedClass;
 public class LibraryClientApplication {
 
 	public static void main(String[] args) {
-		SharedClass sharedClass = new SharedClass();
+		//SharedClass sharedClass = new SharedClass();
 		SpringApplication.run(LibraryClientApplication.class, args);
 	}
 

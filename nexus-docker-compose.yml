@@ -6,4 +6,4 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - /c/Users/Aromanen/Desktop/praca magisterska/practical-part/praca-magisterska/nexus-data:/nexus-data
+      - C:\Users\ArtemCodeMachine\IdeaProjects\praca-magisterska\nexus-data:/nexus-data
