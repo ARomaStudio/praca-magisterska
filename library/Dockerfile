@@ -18,8 +18,13 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=builder /producer/target/*.jar producer.jar
 COPY --from=builder /client/target/*.jar client.jar
+COPY monitor-and-run.sh .
+
+# Create directory for JFR files
+RUN mkdir /desktop && \
+    chmod +x monitor-and-run.sh
 
 EXPOSE 8081 8082
 
-# Run both applications using the Java command
-CMD java -jar producer.jar & java -jar client.jar 
+# Run applications with JFR monitoring
+CMD ["./monitor-and-run.sh"] 

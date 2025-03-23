@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SdkClient {
+public class CodeSharingExampleMain {
 
     public static void main(String[] args) {
-        SpringApplication.run(SdkClient.class, args);
+        SpringApplication.run(CodeSharingExampleMain.class, args);
     }
 
 }

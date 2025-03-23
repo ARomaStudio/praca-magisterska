@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from 'axios';
 
-const UserForm = ({ onSave, userToEdit }) => {
-    const [user, setUser] = useState({ code: "", comment: "" });
+const UserForm = ({ onSave, userToEdit, onUpdateList }) => {
+    const [user, setUser] = useState({
+        id: userToEdit?.id || '',
+        code: userToEdit?.code || '',
+        comment: userToEdit?.comment || '',
+        active: userToEdit?.active ?? true
+    });
     const [error, setError] = useState(null); // To store errors, if any
     const [success, setSuccess] = useState(null); // To store success messages
 
@@ -10,13 +16,16 @@ const UserForm = ({ onSave, userToEdit }) => {
         if (userToEdit) {
             setUser(userToEdit);
         } else {
-            setUser({ code: "", comment: "" });
+            setUser({ id: '', code: '', comment: '', active: true });
         }
     }, [userToEdit]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setUser((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setUser(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -33,32 +42,42 @@ const UserForm = ({ onSave, userToEdit }) => {
         }
 
         try {
-            const url = userToEdit
-                ? `http://localhost:8082/adapt/${userToEdit.id}` // Update specific lambda by ID
-                : "http://localhost:8082/adapt"; // Create new lambda
+            let response;
 
-            const method = userToEdit ? "PUT" : "POST"; // Use PUT for updates and POST for new entries
-
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ code: user.code, comment: user.comment }), // Include both code and comment
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.log("Error response code:", response);
-                throw new Error(errorData.message || "Failed to save code.");
+            if (user.id) {
+                // Update existing lambda
+                response = await axios.put('http://localhost:8082/lambda', {
+                    id: user.id,
+                    code: user.code,
+                    comment: user.comment,
+                    isActive: user.active,
+                    threadId: user.threadId // Include threadId if necessary
+                });
+            } else {
+                // Create new lambda using the /adapt endpoint
+                response = await axios.post('http://localhost:8082/adapt', {
+                    code: user.code,
+                    comment: user.comment,
+                    isActive: user.active,
+                    threadId: user.threadId // Include threadId if necessary
+                });
             }
 
-            const responseData = await response.json();
-            setSuccess(userToEdit ? "Code updated successfully!" : "Code added successfully!"); // Display appropriate success message
-            onSave(responseData); // Pass the server response to the parent component
-            setUser({ code: "", comment: "" }); // Reset form after success
+            // Check if the response status indicates success
+            if (response.status !== 200) {
+                if (response.data && response.data.error) {
+                    setError("Failed to save code."); // Reset form after success
+                }
+            } else {
+                setSuccess(user.id ? "Code updated successfully!" : "Lambda function created successfully!");
+                onSave(response.data); 
+                window.location.reload();
+                // setUser({ id: '', code: '', comment: '', active: true });
+            }
         } catch (err) {
-            setError(err.message); // Handle and display errors
+            // Handle and display errors
+            setError(err.response?.data?.message || err.message); // Use specific error message if available
+            setSuccess(null); // Clear success message on error
         }
     };
 
@@ -103,6 +122,17 @@ const UserForm = ({ onSave, userToEdit }) => {
                         onChange={handleChange}
                         required
                     ></textarea>
+                </div>
+                <div className="mb-3 form-check">
+                    <input
+                        type="checkbox"
+                        className="form-check-input"
+                        id="active"
+                        name="active"
+                        checked={user.active}
+                        onChange={handleChange}
+                    />
+                    <label className="form-check-label" htmlFor="active">Active</label>
                 </div>
                 <button type="submit" className="btn btn-primary">
                     {userToEdit ? "Update" : "Add"} Code

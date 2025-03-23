@@ -6,7 +6,10 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "802:8082"  # Producer port
+      - "8091:8081"  # Client port
+      - "8092:8082"  # Producer port
+    volumes:
+      - "C:/Users/ArtemCodeMachine/Desktop:/desktop"  # Mount desktop directory
     deploy:
       resources:
         limits:

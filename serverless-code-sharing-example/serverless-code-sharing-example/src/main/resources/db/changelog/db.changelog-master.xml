@@ -12,6 +12,15 @@
             </column>
             <column name="code" type="VARCHAR(5000)"/>
             <column name="comment" type="VARCHAR(255)"/>
+            <column name="version_number" type="INT" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="thread_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 

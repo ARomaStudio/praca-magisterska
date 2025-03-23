@@ -6,15 +6,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pm.s32237.controller.dto.CodeRequestDto;
 import pm.s32237.controller.dto.LambdaResponseDto;
+import pm.s32237.controller.dto.LambdaVersionDto;
 import pm.s32237.model.Lambda;
 import pm.s32237.repo.LambdaRepo;
 import pm.s32237.service.CodeAdapterService;
 import pm.s32237.service.LambdaService;
 import pm.s32237.service.ProtoFileService;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @RestController
 public class PrepareLambdaController {
@@ -35,40 +40,67 @@ public class PrepareLambdaController {
     }
 
     @PostMapping("/adapt")
-    public String trigger(@RequestBody CodeRequestDto codeRequest) throws IOException {
+    public ResponseEntity<Map<String, String>> trigger(@RequestBody CodeRequestDto codeRequest) throws IOException {
         String id = String.valueOf(UUID.randomUUID());
         codeAdapterService.generateDtoFromMethod(codeRequest.getCode(), id);
         lambdaService.prepareJarForLambda(id);
-        lambdaRepo.save(new Lambda(id, codeRequest.getCode(), codeRequest.getComment()));
-        return "Done!";
+        
+        Lambda lambda = new Lambda(id, codeRequest.getCode(), codeRequest.getComment());
+        lambdaRepo.save(lambda);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("message", "Lambda function created successfully");
+        response.put("id", id);
+        response.put("version", "1");
+        
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/lambdas")
     public ResponseEntity<List<LambdaResponseDto>> getAllLambdas() {
         List<LambdaResponseDto> lambdas = lambdaRepo.findAll().stream()
-                .map(lambda -> new LambdaResponseDto(lambda.getId(), lambda.getComment(), lambda.getCode()))
+                .map(lambda -> new LambdaResponseDto(
+                    lambda.getId(), 
+                    lambda.getComment(), 
+                    lambda.getCode(),
+                    lambda.isActive(),
+                    lambda.getVersionNumber(),
+                    lambda.getThreadId()
+                ))
+                .sorted((a, b) -> a.getThreadId().compareTo(b.getThreadId()))
                 .toList();
         return ResponseEntity.ok(lambdas);
     }
 
-    @PutMapping("/lambdas")
+    @PutMapping("/lambda")
     public ResponseEntity<LambdaResponseDto> editLambda(@RequestBody LambdaResponseDto codeRequest) throws IOException {
         var existingLambda = lambdaRepo.findById(codeRequest.getId())
-                .orElseThrow(() -> new RuntimeException("Lambda not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lambda not found"));
 
-        String id = String.valueOf(UUID.randomUUID());
-        codeAdapterService.generateDtoFromMethod(codeRequest.getCode(), id);
-        lambdaService.prepareJarForLambda(id);
-        lambdaService.deleteJarFromS3(existingLambda.getId());
-        lambdaService.deleteLambdaFunction(existingLambda.getId());
-        lambdaRepo.save(new Lambda(id, codeRequest.getComment(), codeRequest.getCode()));
-        protoFileService.deleteProtoFromS3(existingLambda.getId());
-        lambdaRepo.deleteById(existingLambda.getId());
+        // Create new version
+        String newId = String.valueOf(UUID.randomUUID());
+        codeAdapterService.generateDtoFromMethod(codeRequest.getCode(), newId);
+        lambdaService.prepareJarForLambda(newId);
+        
+        // Create new version
+        Lambda newLambda = new Lambda(newId, codeRequest.getCode(), codeRequest.getComment());
+        newLambda.setVersionNumber(existingLambda.getVersionNumber() + 1);
+        newLambda.setActive(codeRequest.isActive());
+        newLambda.setThreadId(existingLambda.getThreadId());
+        lambdaRepo.save(newLambda);
 
-        return ResponseEntity.ok(new LambdaResponseDto(existingLambda.getId(), existingLambda.getComment(), existingLambda.getCode()    ));
+        return ResponseEntity.ok(new LambdaResponseDto(
+            newLambda.getId(), 
+            newLambda.getComment(), 
+            newLambda.getCode(), 
+            newLambda.isActive(),
+            newLambda.getVersionNumber(),
+            newLambda.getThreadId()
+        ));
     }
 
-    @DeleteMapping("/lambdas/{id}")
+    @DeleteMapping("/lambda/{id}")
     public ResponseEntity<LambdaResponseDto> deleteLambda(@PathVariable String id) {
         var existingLambda = lambdaRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Lambda not found"));
@@ -77,7 +109,14 @@ public class PrepareLambdaController {
         protoFileService.deleteProtoFromS3(existingLambda.getId());
         lambdaRepo.deleteById(existingLambda.getId());
 
-        return ResponseEntity.ok(new LambdaResponseDto(existingLambda.getId(), existingLambda.getComment(), existingLambda.getCode()    ));
+        return ResponseEntity.ok(new LambdaResponseDto(
+            existingLambda.getId(), 
+            existingLambda.getComment(), 
+            existingLambda.getCode(),
+            existingLambda.isActive(),
+            existingLambda.getVersionNumber(),
+            existingLambda.getThreadId()
+        ));
     }
 
     @GetMapping("/download")

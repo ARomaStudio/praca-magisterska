@@ -15,11 +15,22 @@ RUN mvn clean package -DskipTests
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
 
+# Install necessary tools
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=builder /producer/target/*.jar producer.jar
 COPY --from=builder /consumer/target/*.jar consumer.jar
-COPY start-services.sh .
-RUN chmod +x start-services.sh
+COPY monitor-and-run.sh .
 
-EXPOSE 8082
-CMD ["./start-services.sh"] 
+# Create directory for JFR files
+RUN mkdir /desktop && \
+    chmod +x monitor-and-run.sh
+
+EXPOSE 8081 8082
+
+# Run applications with JFR monitoring
+CMD ["./monitor-and-run.sh"] 
